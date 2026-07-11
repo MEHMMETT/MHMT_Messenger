@@ -1,0 +1,6 @@
+{
+  "name": "MHMT Messenger",
+  "description": "MHMT Messenger is a fully-featured, native Android chat and messaging application with offline-capable Room persistence, real-time AI contact conversations (via Gemini), voice message recording, simulated direct audio calling, contact list management, group chats, customizable background wallpapers (pre-loaded or gallery), liquid glass (glassmorphism) design elements, dark/light theme, and dynamic English and Persian (RTL) language translation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
