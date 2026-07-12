@@ -32,24 +32,36 @@ class AuthRepository {
     val isLoggedIn: Boolean
         get() = currentUserId != null
 
-    suspend fun signUp(email: String, password: String, displayName: String): AuthResult {
-        return try {
-            supabase.auth.signUpWith(Email) {
-                this.email = email
-                this.password = password
-            }
-            // After sign-up (email confirmations are disabled), the user is
-            // already authenticated, so we can create their profile row.
-            val userId = supabase.auth.currentUserOrNull()?.id
-                ?: return AuthResult.Error("ثبت‌نام ناموفق بود، دوباره تلاش کنید.")
-
-            supabase.postgrest["profiles"].insert(
-    ProfileRow(id = userId, name = displayName, email = email)
-            )
-            AuthResult.Success
-        } catch (e: Exception) {
-            AuthResult.Error(e.message ?: "خطای ناشناخته در ثبت‌نام")
+    suspend fun signUp(email: String, password: String, displayName: String, username: String): AuthResult {
+    return try {
+        val cleanUsername = username.trim().lowercase()
+        if (cleanUsername.isBlank()) {
+            return AuthResult.Error("لطفاً یک آیدی وارد کنید.")
         }
+
+        val existing = supabase.postgrest["profiles"]
+            .select { filter { eq("username", cleanUsername) } }
+            .decodeSingleOrNull<ProfileRow>()
+        if (existing != null) {
+            return AuthResult.Error("این آیدی قبلاً استفاده شده، یکی دیگه انتخاب کنید.")
+        }
+
+        supabase.auth.signUpWith(Email) {
+            this.email = email
+            this.password = password
+        }
+        // After sign-up (email confirmations are disabled), the user is
+        // already authenticated, so we can create their profile row.
+        val userId = supabase.auth.currentUserOrNull()?.id
+            ?: return AuthResult.Error("ثبت‌نام ناموفق بود، دوباره تلاش کنید.")
+
+        supabase.postgrest["profiles"].insert(
+            ProfileRow(id = userId, name = displayName, email = email, username = cleanUsername)
+        )
+        AuthResult.Success
+    } catch (e: Exception) {
+        AuthResult.Error(e.message ?: "خطای ناشناخته در ثبت‌نام")
+    }
     }
 
     suspend fun signIn(email: String, password: String): AuthResult {
