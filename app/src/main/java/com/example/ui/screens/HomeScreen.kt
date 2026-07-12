@@ -65,6 +65,7 @@ fun HomeScreen(viewModel: ChatViewModel) {
     // Dialog flags
     var showAddContactDialog by remember { mutableStateOf(false) }
     var showCreateGroupDialog by remember { mutableStateOf(false) }
+    var showRealChatDialog by remember { mutableStateOf(false) }
 
     CompositionLocalProvider(LocalLayoutDirection provides layoutDir) {
         Scaffold(
@@ -168,6 +169,17 @@ fun HomeScreen(viewModel: ChatViewModel) {
                     )
                 }
             },
+            floatingActionButton = {
+                if (selectedTab == 0) {
+                    FloatingActionButton(
+                        onClick = { showRealChatDialog = true },
+                        containerColor = Color(0xFFD1E1FF),
+                        contentColor = Color(0xFF0A0C10)
+                    ) {
+                        Icon(Icons.Default.PersonAdd, contentDescription = "Start real chat")
+                    }
+                }
+            },
             containerColor = if (settings.theme == "dark") Slate900 else Color(0xFFF8FAFC)
         ) { innerPadding ->
             Box(
@@ -201,6 +213,13 @@ fun HomeScreen(viewModel: ChatViewModel) {
                 viewModel = viewModel,
                 language = settings.language,
                 onDismiss = { showCreateGroupDialog = false }
+            )
+        }
+
+        if (showRealChatDialog) {
+            StartRealChatDialog(
+                viewModel = viewModel,
+                onDismiss = { showRealChatDialog = false }
             )
         }
     }
@@ -1242,6 +1261,67 @@ private fun saveUriToInternalStorageForGlobal(context: android.content.Context, 
         e.printStackTrace()
         null
     }
+}
+
+@Composable
+fun StartRealChatDialog(
+    viewModel: ChatViewModel,
+    onDismiss: () -> Unit
+) {
+    var email by remember { mutableStateOf("") }
+    val loading by viewModel.realChatLoading.collectAsState()
+    val error by viewModel.realChatError.collectAsState()
+    val activeRealChatId by viewModel.activeRealChatId.collectAsState()
+
+    LaunchedEffect(activeRealChatId) {
+        if (activeRealChatId != null) {
+            onDismiss()
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("شروع چت واقعی") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "ایمیل کاربری که قبلاً تو اپ ثبت‌نام کرده رو وارد کن",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("ایمیل") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                if (error != null) {
+                    Text(error ?: "", color = androidx.compose.ui.graphics.Color.Red, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    viewModel.clearRealChatError()
+                    viewModel.openRealChatByEmail(email)
+                },
+                enabled = email.isNotBlank() && !loading
+            ) {
+                if (loading) {
+                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                } else {
+                    Text("شروع چت")
+                }
+            }
+        },
+        dismissButton = {
+            OutlinedButton(onClick = onDismiss) {
+                Text(Trans.get(viewModel.settings.value.language, "cancel"))
+            }
+        }
+    )
 }
 
 @Composable

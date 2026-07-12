@@ -15,6 +15,7 @@ import com.example.ui.screens.CallingScreen
 import com.example.ui.screens.ChatDetailScreen
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.LoginScreen
+import com.example.ui.screens.RealChatDetailScreen
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.viewmodel.ChatViewModel
 
@@ -28,6 +29,7 @@ class MainActivity : ComponentActivity() {
             val isLoggedIn by viewModel.isLoggedIn.collectAsState()
             val activeChatId by viewModel.activeChatId.collectAsState()
             val activeCall by viewModel.activeCall.collectAsState()
+            val activeRealChatId by viewModel.activeRealChatId.collectAsState()
 
             MyApplicationTheme(
                 darkTheme = settings.theme == "dark"
@@ -35,16 +37,19 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     // Crossfade provides elegant animated transitions between core application layouts
                     Crossfade(
-                        targetState = Triple(isLoggedIn, activeCall != null, activeChatId != null),
+                        targetState = Quadruple(isLoggedIn, activeCall != null, activeChatId != null, activeRealChatId != null),
                         label = "mainScreenTransition"
                     ) { state ->
-                        val (loggedIn, onCall, inChat) = state
+                        val (loggedIn, onCall, inChat, inRealChat) = state
                         when {
                             !loggedIn -> {
                                 LoginScreen(viewModel = viewModel)
                             }
                             onCall -> {
                                 CallingScreen(viewModel = viewModel)
+                            }
+                            inRealChat -> {
+                                RealChatDetailScreen(viewModel = viewModel)
                             }
                             inChat -> {
                                 ChatDetailScreen(viewModel = viewModel)
@@ -59,3 +64,5 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)

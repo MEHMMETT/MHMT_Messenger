@@ -160,6 +160,7 @@ data class CallState(
 class ChatViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = ChatRepository(application)
     private val authRepository = AuthRepository()
+    private val supabaseChatRepository = com.example.data.repository.SupabaseChatRepository()
     private val sharedPrefs = application.getSharedPreferences("mhmt_prefs", Context.MODE_PRIVATE)
 
     // --- iOS Emoji States ---
@@ -371,6 +372,107 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             authRepository.signOut()
             _isLoggedIn.value = false
         }
+    }
+
+    // --- Real (Supabase-backed) Chat State ---
+    private val _activeRealChatId = MutableStateFlow<String?>(null)
+    val activeRealChatId: StateFlow<String?> = _activeRealChatId.asStateFlow()
+
+    private val _realChatPeerName = MutableStateFlow("")
+    val realChatPeerName: StateFlow<String> = _realChatPeerName.asStateFlow()
+
+    private val _realChatPeerAvatar = MutableStateFlow<String?>(null)
+    val realChatPeerAvatar: StateFlow<String?> = _realChatPeerAvatar.asStateFlow()
+
+    private val _realMessages = MutableStateFlow<List<com.example.data.repository.RealMessageRow>>(emptyList())
+    val realMessages: StateFlow<List<com.example.data.repository.RealMessageRow>> = _realMessages.asStateFlow()
+
+    private val _realChatLoading = MutableStateFlow(false)
+    val realChatLoading: StateFlow<Boolean> = _realChatLoading.asStateFlow()
+
+    private val _realChatError = MutableStateFlow<String?>(null)
+    val realChatError: StateFlow<String?> = _realChatError.asStateFlow()
+
+    val myUserId: String? get() = authRepository.currentUserId
+
+    private var realtimeJob: Job? = null
+
+    fun openRealChatByEmail(email: String) {
+        if (email.isBlank()) return
+        viewModelScope.launch {
+            _realChatLoading.value = true
+            _realChatError.value = null
+            try {
+                val peer = supabaseChatRepository.findUserByEmail(email.trim())
+                if (peer == null) {
+                    _realChatError.value = "کاربری با این ایمیل پیدا نشد"
+                    _realChatLoading.value = false
+                    return@launch
+                }
+                val chatId = supabaseChatRepository.getOrCreateDirectChat(peer.id)
+                _realChatPeerName.value = peer.name
+                _realChatPeerAvatar.value = peer.avatarUrl
+                _activeRealChatId.value = chatId
+                loadRealMessages(chatId)
+                listenForNewMessages(chatId)
+            } catch (e: Exception) {
+                _realChatError.value = e.message ?: "خطا در برقراری چت"
+            } finally {
+                _realChatLoading.value = false
+            }
+        }
+    }
+
+    private fun loadRealMessages(chatId: String) {
+        viewModelScope.launch {
+            try {
+                _realMessages.value = supabaseChatRepository.getMessages(chatId)
+            } catch (e: Exception) {
+                // keep whatever we already had; non-fatal
+            }
+        }
+    }
+
+    private fun listenForNewMessages(chatId: String) {
+        realtimeJob?.cancel()
+        realtimeJob = viewModelScope.launch {
+            try {
+                supabaseChatRepository.subscribeChannel(chatId)
+                supabaseChatRepository.observeNewMessages(chatId).collect { newMessage ->
+                    if (_realMessages.value.none { it.id == newMessage.id }) {
+                        _realMessages.value = _realMessages.value + newMessage
+                    }
+                }
+            } catch (e: Exception) {
+                // Realtime is a nice-to-have; the chat still works via manual refresh
+            }
+        }
+    }
+
+    fun sendRealMessage(text: String) {
+        val chatId = _activeRealChatId.value ?: return
+        if (text.isBlank()) return
+        viewModelScope.launch {
+            try {
+                supabaseChatRepository.sendMessage(chatId, text)
+                // Safety-net refresh in case the Realtime event is delayed/missed.
+                loadRealMessages(chatId)
+            } catch (e: Exception) {
+                _realChatError.value = e.message ?: "ارسال پیام ناموفق بود"
+            }
+        }
+    }
+
+    fun closeRealChat() {
+        realtimeJob?.cancel()
+        realtimeJob = null
+        _activeRealChatId.value = null
+        _realMessages.value = emptyList()
+        _realChatError.value = null
+    }
+
+    fun clearRealChatError() {
+        _realChatError.value = null
     }
 
     fun selectChat(chatId: String?) {
