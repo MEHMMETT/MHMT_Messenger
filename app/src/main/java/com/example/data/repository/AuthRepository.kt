@@ -43,7 +43,7 @@ class AuthRepository {
                 ?: return AuthResult.Error("ثبت‌نام ناموفق بود، دوباره تلاش کنید.")
 
             supabase.postgrest["profiles"].insert(
-                ProfileRow(id = userId, name = displayName)
+    ProfileRow(id = userId, name = displayName, email = email)
             )
             AuthResult.Success
         } catch (e: Exception) {
