@@ -81,13 +81,14 @@ class AuthRepository {
             null
         }
     }
-}
-suspend fun findUserByEmail(email: String): ProfileRow? {
-    return try {
-        supabase.postgrest["profiles"]
-            .select { filter { eq("email", email) } }
-            .decodeSingleOrNull<ProfileRow>()
-    } catch (e: Exception) {
-        null
+
+    suspend fun findUserByEmail(email: String): ProfileRow? {
+        return try {
+            supabase.postgrest["profiles"]
+                .select { filter { eq("email", email) } }
+                .decodeSingleOrNull<ProfileRow>()
+        } catch (e: Exception) {
+            null
+        }
     }
 }
