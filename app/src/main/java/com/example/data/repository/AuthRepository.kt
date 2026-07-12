@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
 data class ProfileRow(
     val id: String,
     val name: String,
+    val email: String? = null,
     @SerialName("avatar_url") val avatarUrl: String? = null,
     val phone: String? = null,
     val bio: String? = null
