@@ -42,6 +42,7 @@ fun LoginScreen(viewModel: ChatViewModel) {
 
     var isSignUpMode by remember { mutableStateOf(false) }
     var nameInput by remember { mutableStateOf("") }
+    var usernameInput by remember { mutableStateOf("") }
     var emailInput by remember { mutableStateOf("") }
     var passwordInput by remember { mutableStateOf("") }
 
