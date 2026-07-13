@@ -110,6 +110,13 @@ class SupabaseChatRepository {
 
     suspend fun findUserByEmail(email: String): ProfileRow? = authRepository.findUserByEmail(email)
 
+    suspend fun findUserByUsername(username: String): ProfileRow? {
+        val clean = username.trim().lowercase().removePrefix("@")
+        return supabase.postgrest["profiles"]
+            .select { filter { eq("username", clean) } }
+            .decodeSingleOrNull<ProfileRow>()
+    }
+
     /**
      * Returns the list of direct chats for the current user, along with
      * the other participant's profile info.
