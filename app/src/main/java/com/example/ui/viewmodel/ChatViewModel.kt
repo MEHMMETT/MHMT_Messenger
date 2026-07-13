@@ -345,12 +345,12 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun signUp(email: String, password: String, displayName: String) {
-        if (email.isBlank() || password.isBlank() || displayName.isBlank()) return
+    fun signUp(email: String, password: String, displayName: String, username: String) {
+        if (email.isBlank() || password.isBlank() || displayName.isBlank() || username.isBlank()) return
         viewModelScope.launch {
             _authLoading.value = true
             _authError.value = null
-            when (val result = authRepository.signUp(email.trim(), password, displayName.trim())) {
+            when (val result = authRepository.signUp(email.trim(), password, displayName.trim(), username.trim())) {
                 is AuthResult.Success -> {
                     applyRealProfile()
                     _isLoggedIn.value = true
@@ -359,6 +359,9 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                     _authError.value = result.message
                 }
             }
+            _authLoading.value = false
+        }
+    }
             _authLoading.value = false
         }
     }
