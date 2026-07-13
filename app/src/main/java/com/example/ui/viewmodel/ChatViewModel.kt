@@ -362,9 +362,6 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             _authLoading.value = false
         }
     }
-            _authLoading.value = false
-        }
-    }
 
     fun clearAuthError() {
         _authError.value = null
