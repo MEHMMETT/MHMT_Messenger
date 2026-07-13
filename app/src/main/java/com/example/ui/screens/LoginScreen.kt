@@ -161,6 +161,25 @@ fun LoginScreen(viewModel: ChatViewModel) {
                                     shape = RoundedCornerShape(12.dp)
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
+
+                                OutlinedTextField(
+                                    value = usernameInput,
+                                    onValueChange = { usernameInput = it.filter { ch -> ch.isLetterOrDigit() || ch == '_' } },
+                                    label = {
+                                        Text(
+                                            if (isFa) "آیدی (username)" else "Username",
+                                            color = Color.White.copy(alpha = 0.6f)
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFFD1E1FF))
+                                    },
+                                    singleLine = true,
+                                    colors = loginFieldColors(),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
                             }
                         }
 
