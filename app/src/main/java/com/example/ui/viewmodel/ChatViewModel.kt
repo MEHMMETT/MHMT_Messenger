@@ -400,15 +400,15 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     private var realtimeJob: Job? = null
 
-    fun openRealChatByEmail(email: String) {
-        if (email.isBlank()) return
+    fun openRealChatByUsername(username: String) {
+        if (username.isBlank()) return
         viewModelScope.launch {
             _realChatLoading.value = true
             _realChatError.value = null
             try {
-                val peer = supabaseChatRepository.findUserByEmail(email.trim())
+                val peer = supabaseChatRepository.findUserByUsername(username.trim())
                 if (peer == null) {
-                    _realChatError.value = "کاربری با این ایمیل پیدا نشد"
+                    _realChatError.value = "کاربری با این آیدی پیدا نشد"
                     _realChatLoading.value = false
                     return@launch
                 }
