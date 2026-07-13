@@ -245,7 +245,7 @@ fun LoginScreen(viewModel: ChatViewModel) {
                             onClick = {
                                 viewModel.clearAuthError()
                                 if (isSignUpMode) {
-                                    viewModel.signUp(emailInput, passwordInput, nameInput)
+                                    viewModel.signUp(emailInput, passwordInput, nameInput, usernameInput)
                                 } else {
                                     viewModel.signIn(emailInput, passwordInput)
                                 }
