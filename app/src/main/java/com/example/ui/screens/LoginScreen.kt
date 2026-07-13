@@ -285,11 +285,7 @@ fun LoginScreen(viewModel: ChatViewModel) {
                         TextButton(
                             onClick = {
                                 viewModel.clearAuthError()
-                                if (isSignUpMode) {
-                                    viewModel.signUp(emailInput, passwordInput, nameInput, usernameInput)
-                                } else {
-                                    viewModel.signIn(emailInput, passwordInput)
-                                }
+                                isSignUpMode = !isSignUpMode
                             }
                         ) {
                             Text(
