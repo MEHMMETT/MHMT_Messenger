@@ -285,9 +285,12 @@ fun LoginScreen(viewModel: ChatViewModel) {
                         TextButton(
                             onClick = {
                                 viewModel.clearAuthError()
-                                isSignUpMode = !isSignUpMode
-                            }
-                        ) {
+                                if (isSignUpMode) {
+                                    viewModel.signUp(emailInput, passwordInput, nameInput, usernameInput)
+                                } else {
+                                    viewModel.signIn(emailInput, passwordInput)
+                                }
+                            },
                             Text(
                                 text = if (isSignUpMode) {
                                     if (isFa) "قبلاً حساب دارید؟ وارد شوید" else "Already have an account? Log in"
