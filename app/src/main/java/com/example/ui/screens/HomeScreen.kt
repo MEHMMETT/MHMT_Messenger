@@ -1285,15 +1285,15 @@ fun StartRealChatDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    "ایمیل کاربری که قبلاً تو اپ ثبت‌نام کرده رو وارد کن",
+                    "آیدی کاربری که قبلاً تو اپ ثبت‌نام کرده رو وارد کن",
                     style = MaterialTheme.typography.bodySmall
                 )
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text("ایمیل") },
+                    label = { Text("آیدی") },
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                     modifier = Modifier.fillMaxWidth()
                 )
                 if (error != null) {
@@ -1305,7 +1305,7 @@ fun StartRealChatDialog(
             Button(
                 onClick = {
                     viewModel.clearRealChatError()
-                    viewModel.openRealChatByEmail(email)
+                    viewModel.openRealChatByUsername(email)
                 },
                 enabled = email.isNotBlank() && !loading
             ) {
