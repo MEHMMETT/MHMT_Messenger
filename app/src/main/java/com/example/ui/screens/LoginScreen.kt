@@ -239,8 +239,7 @@ fun LoginScreen(viewModel: ChatViewModel) {
                         Spacer(modifier = Modifier.height(24.dp))
 
                         val canSubmit = emailInput.isNotBlank() && passwordInput.isNotBlank() &&
-                            (!isSignUpMode || nameInput.isNotBlank()) && !isLoading
-
+                            (!isSignUpMode || (nameInput.isNotBlank() && usernameInput.isNotBlank())) && !isLoading
                         // Submit Action Button
                         Button(
                             onClick = {
